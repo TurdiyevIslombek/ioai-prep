@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOAI Day 1 — Vectors, Matrices, Transformations & Eigenvalues</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #1c2333;
+  --surface3: #21283b;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.1);
+  --text: #e6edf3;
+  --text2: #c9d1d9;
+  --muted: #8b949e;
+  --accent: #58a6ff;
+  --accent2: #79c0ff;
+  --green: #3fb950;
+  --green-bg: rgba(63,185,80,0.1);
+  --orange: #d29922;
+  --orange-bg: rgba(210,153,34,0.1);
+  --red: #f85149;
+  --red-bg: rgba(248,81,73,0.08);
+  --purple: #bc8cff;
+  --purple-bg: rgba(188,140,255,0.1);
+  --yellow: #e3b341;
+  --cyan: #39d353;
+  --pink: #f778ba;
+  --mono: 'JetBrains Mono', monospace;
+  --serif: 'Crimson Pro', Georgia, serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.8;
+  min-height: 100vh;
+}
+
+/* === HEADER === */
+.hero {
+  padding: 3rem 2rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--border);
+}
+.hero-badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: 2.5rem;
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+.hero h1 em { color: var(--accent); font-style: italic; }
+.hero-sub {
+  color: var(--muted);
+  font-size: 15px;
+  max-width: 650px;
+  margin-top: 0.75rem;
+}
+.hero-meta {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+.meta-chip {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.meta-chip.blue { border-color: rgba(88,166,255,0.3); color: var(--accent); background: rgba(88,166,255,0.06); }
+.meta-chip.green { border-color: rgba(63,185,80,0.3); color: var(--green); background: var(--green-bg); }
+
+/* === NAV === */
+.toc {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(13,17,23,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 2rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+.toc::-webkit-scrollbar { display: none; }
+.toc a {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  display: inline-block;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+.toc a:hover { color: var(--accent); background: rgba(88,166,255,0.08); }
+
+/* === MAIN === */
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 2rem 5rem;
+}
+
+/* === SECTION === */
+.section {
+  padding-top: 3rem;
+  padding-bottom: 1rem;
+}
+.section-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.section h2 {
+  font-family: var(--serif);
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+  line-height: 1.3;
+}
+.section h3 {
+  font-family: var(--sans);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 2rem 0 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.section h4 {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--accent2);
+  margin: 1.5rem 0 0.5rem;
+}
+
+p { margin-bottom: 1rem; color: var(--text2); }
+strong { color: var(--text); font-weight: 600; }
+
+/* === CALLOUTS === */
+.callout {
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  border-left: 3px solid;
+  font-size: 15px;
+}
+.callout.insight { background: rgba(88,166,255,0.06); border-color: var(--accent); }
+.callout.warning { background: var(--orange-bg); border-color: var(--orange); }
+.callout.ioai { background: var(--purple-bg); border-color: var(--purple); }
+.callout.example { background: var(--green-bg); border-color: var(--green); }
+.callout-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  display: block;
+}
+.callout.insight .callout-tag { color: var(--accent); }
+.callout.warning .callout-tag { color: var(--orange); }
+.callout.ioai .callout-tag { color: var(--purple); }
+.callout.example .callout-tag { color: var(--green); }
+
+/* === CODE === */
+pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 1rem 0;
+  color: var(--text2);
+}
+code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  color: var(--orange);
+  background: rgba(210,153,34,0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+pre code {
+  background: none;
+  padding: 0;
+  color: var(--text2);
+}
+.kw { color: var(--purple); }
+.fn { color: var(--accent); }
+.cm { color: var(--muted); font-style: italic; }
+.st { color: var(--green); }
+.num { color: var(--orange); }
+
+/* === MATH BLOCK === */
+.math-block {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin: 1.25rem 0;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  text-align: center;
+  line-height: 2;
+  color: var(--text);
+  overflow-x: auto;
+}
+.math-block .label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: block;
+  text-align: left;
+  margin-bottom: 0.5rem;
+}
+
+/* === PAPER WORK === */
+.paper {
+  background: #faf8f0;
+  border: 1px solid #e0dcd0;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin: 1.25rem 0;
+  color: #1a1a1a;
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 2;
+  position: relative;
+}
+.paper::before {
+  content: '✏️ ON PAPER';
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: #8a7a5a;
+  position: absolute;
+  top: 0.6rem;
+  right: 1rem;
+}
+.paper .step {
+  display: flex;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+}
+.paper .step-num {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #8a7a5a;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: right;
+}
+.paper code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  color: #b35000;
+  background: rgba(179,80,0,0.08);
+}
+.paper strong { color: #1a1a1a; }
+
+/* === GRID === */
+.concept-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+@media (max-width: 640px) { .concept-grid { grid-template-columns: 1fr; } }
+.concept-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.15rem;
+}
+.concept-card h5 {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+.concept-card p {
+  font-size: 14px;
+  color: var(--text2);
+  margin: 0;
+}
+
+/* === DIVIDER === */
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border2), transparent);
+  margin: 2rem 0;
+}
+
+/* === LISTS === */
+ol, ul {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+li {
+  margin-bottom: 0.4rem;
+  color: var(--text2);
+}
+
+/* === EXPAND SECTIONS === */
+details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+details summary {
+  padding: 0.85rem 1.15rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+}
+details summary::marker { content: ''; }
+details summary::before {
+  content: '▸';
+  color: var(--accent);
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+details[open] summary::before { transform: rotate(90deg); }
+details .inner {
+  padding: 0 1.15rem 1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 2rem;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  max-width: 900px;
+  margin: 0 auto;
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== HERO ===================== -->
+<div class="hero">
+  <div class="hero-badge">IOAI 2026 · Phase 1 · Day 1 of 8</div>
+  <h1>Vectors, Matrices, Transformations<br>& <em>Eigenvalues</em></h1>
+  <p class="hero-sub">
+    The complete beginner-friendly guide. Every concept explained from scratch with paper examples, 
+    Python code, and how it connects to IOAI problems. No prior linear algebra needed — just SAT-level math comfort.
+  </p>
+  <div class="hero-meta">
+    <span class="meta-chip blue">MML Ch 2.1–2.5</span>
+    <span class="meta-chip blue">3B1B Videos 1–10</span>
+    <span class="meta-chip green">~8 hours total</span>
+  </div>
+</div>
+
+<!-- ===================== TOC ===================== -->
+<nav class="toc">
+  <a href="#s1">1. Vectors</a>
+  <a href="#s2">2. Operations</a>
+  <a href="#s3">3. Span & Independence</a>
+  <a href="#s4">4. Matrices</a>
+  <a href="#s5">5. Transformations</a>
+  <a href="#s6">6. Determinants</a>
+  <a href="#s7">7. Inverse</a>
+  <a href="#s8">8. Column/Null Space</a>
+  <a href="#s9">9. Rank</a>
+  <a href="#s10">10. Systems & Gauss</a>
+  <a href="#s11">11. Eigenvalues</a>
+  <a href="#s12">12. Problems</a>
+</nav>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 1: WHAT IS A VECTOR? -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="s1">
+  <div class="section-label">Section 01</div>
+  <h2>What Is a Vector?</h2>
+
+  <p>
+    Forget everything complicated. A <strong>vector</strong> is just a list of numbers — an arrow that points somewhere.
+    If you write <code>v = [3, 2]</code>, that means "go 3 steps right and 2 steps up" from the origin.
+  </p>
+
+  <p>
+    But here's the key idea that 3Blue1Brown emphasizes: there are <strong>three ways to think about vectors</strong>, 
+    and you need all three depending on context:
+  </p>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <h5>🎓 Physics view</h5>
+      <p>An arrow with a direction and length. Can be moved around — only the direction and magnitude matter.</p>
+    </div>
+    <div class="concept-card">
+      <h5>💻 CS view</h5>
+      <p>An ordered list of numbers. <code>[3, 2]</code> in 2D, <code>[1, 0, -4, 7]</code> in 4D. Each entry is a "feature."</p>
+    </div>
+    <div class="concept-card">
+      <h5>📐 Math view</h5>
+      <p>Anything that can be added together and scaled by a number, following certain rules (a "vector space").</p>
+    </div>
+    <div class="concept-card">
+      <h5>🤖 ML view</h5>
+      <p>A data point. Each image, sentence, or user is represented as a vector of numbers in some high-dimensional space.</p>
+    </div>
+  </div>
+
+  <div class="callout insight">
+    <span class="callout-tag">Key insight</span>
+    <strong>For IOAI, the CS/math hybrid view dominates.</strong> A vector is a column of numbers that lives in ℝⁿ 
+    (the set of all lists of n real numbers). A 28×28 pixel grayscale image? That's a vector in ℝ⁷⁸⁴ — just flatten all 784 pixels into one long list.
+  </div>
+
+  <h3>Notation you must know</h3>
+
+  <p>Vectors are written as <strong>column vectors</strong> by default in math:</p>
+
+  <div class="math-block">
+    <span class="label">Column vector in ℝ³</span>
+    v = ⎡ 3 ⎤<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;⎢ 2 ⎥<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;⎣-1 ⎦
+  </div>
+
+  <p>
+    We write this compactly as <code>v = [3, 2, -1]ᵀ</code> where the <strong>ᵀ means transpose</strong> — flip the 
+    row into a column. The number of entries is the <strong>dimension</strong>. This vector is in <strong>ℝ³</strong> 
+    (three-dimensional real space).
+  </p>
+
+  <h4>In Python (NumPy)</h4>
+
+<pre><code><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># Creating vectors</span>
+v = np.<span class="fn">array</span>([<span class="num">3</span>, <span class="num">2</span>, <span class="num">-1</span>])          <span class="cm"># Shape: (3,) — 1D array</span>
+v_col = np.<span class="fn">array</span>([[<span class="num">3</span>], [<span class="num">2</span>], [<span class="num">-1</span>]])  <span class="cm"># Shape: (3,1) — actual column vector</span>
+
+<span class="cm"># Easier way to make a column vector</span>
+v_col = v.<span class="fn">reshape</span>(-<span class="num">1</span>, <span class="num">1</span>)             <span class="cm"># Same thing: reshape to (3,1)</span>
+
+<span class="fn">print</span>(v.<span class="fn">shape</span>)       <span class="cm"># (3,)</span>
+<span class="fn">print</span>(v_col.<span class="fn">shape</span>)   <span class="cm"># (3, 1)</span>
+</code></pre>
+
+  <div class="callout warning">
+    <span class="callout-tag">Common beginner trap</span>
+    In NumPy, <code>np.array([3, 2, -1])</code> has shape <code>(3,)</code> — it's neither a row nor a column. 
+    NumPy usually handles this fine, but in IOAI coding problems, shape mismatches cause silent bugs. 
+    Always check <code>.shape</code> when debugging.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 2: VECTOR OPERATIONS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="s2">
+  <div class="section-label">Section 02</div>
+  <h2>Vector Operations</h2>
+
+  <h3>Addition: tip-to-tail</h3>
+  <p>
+    To add two vectors, place the second one's tail at the first one's tip. The result goes from the 
+    origin to the second arrow's tip. Numerically: just add entry by entry.
+  </p>
+
+  <div class="math-block">
+    <span class="label">Vector addition</span>
+    [3, 2] + [1, -1] = [3+1, 2+(-1)] = [4, 1]
+  </div>
+
+  <h3>Scalar multiplication: stretching</h3>
+  <p>
+    Multiply every entry by the same number (the "scalar"). This stretches or flips the vector.
+  </p>
+
+  <div class="math-block">
+    <span class="label">Scalar multiplication</span>
+    2 · [3, 2] = [6, 4] &nbsp;&nbsp;&nbsp; (twice as long, same direction)<br>
+    -1 · [3, 2] = [-3, -2] &nbsp;&nbsp; (same length, opposite direction)
+  </div>
+
+  <div class="paper">
+    <strong>✏️ Work this out on paper right now:</strong><br><br>
+    Given a = [2, 5] and b = [-1, 3]:<br>
+    <div class="step"><span class="step-num">1.</span><span>Compute a + b = [2+(-1), 5+3] = <strong>[1, 8]</strong></span></div>
+    <div class="step"><span class="step-num">2.</span><span>Compute 3a = [6, 15]</span></div>
+    <div class="step"><span class="step-num">3.</span><span>Compute 2a - b = [2·2-(-1), 2·5-3] = [4+1, 10-3] = <strong>[5, 7]</strong></span></div>
+    <div class="step"><span class="step-num">4.</span><span>Draw all of these on graph paper. See how 2a - b is a <em>linear combination</em>.</span></div>
+  </div>
+
+<pre><code><span class="cm"># Vector operations in NumPy</span>
+a = np.<span class="fn">array</span>([<span class="num">2</span>, <span class="num">5</span>])
+b = np.<span class="fn">array</span>([-<span class="num">1</span>, <span class="num">3</span>])
+
+<span class="fn">print</span>(a + b)      <span class="cm"># [1, 8]</span>
+<span class="fn">print</span>(<span class="num">3</span> * a)       <span class="cm"># [ 6, 15]</span>
+<span class="fn">print</span>(<span class="num">2</span>*a - b)     <span class="cm"># [5, 7]</span>
+
+<span class="cm"># Length (magnitude / norm) of a vector</span>
+<span class="fn">print</span>(np.linalg.<span class="fn">norm</span>(a))  <span class="cm"># sqrt(4 + 25) = sqrt(29) ≈ 5.385</span>
+</code></pre>
+
+  <h3>Dot product: how similar are two vectors?</h3>
+
+  <p>
+    The <strong>dot product</strong> (inner product) of two vectors multiplies them entry-by-entry and sums up:
+  </p>
+
+  <div class="math-block">
+    <span class="label">Dot product</span>
+    a · b = a₁b₁ + a₂b₂ + ... + aₙbₙ<br><br>
+    [2, 5] · [-1, 3] = (2)(−1) + (5)(3) = −2 + 15 = 13
+  </div>
+
+  <p>The dot product has a <strong>geometric meaning</strong>:</p>
+
+  <div class="math-block">
+    a · b = ‖a‖ · ‖b‖ · cos(θ)
+  </div>
+
+  <p>Where θ is the angle between the vectors. This tells you:</p>
+  <ul>
+    <li><strong>Positive dot product →</strong> vectors point in roughly the same direction (angle &lt; 90°)</li>
+    <li><strong>Zero dot product →</strong> vectors are <strong>perpendicular (orthogonal)</strong> — this is huge in ML</li>
+    <li><strong>Negative dot product →</strong> vectors point in roughly opposite directions (angle &gt; 90°)</li>
+  </ul>
+
+  <div class="callout ioai">
+    <span class="callout-tag">Why IOAI cares</span>
+    <strong>The dot product is the foundation of ALL of ML.</strong> Neural networks compute dot products between 
+    inputs and weights. Cosine similarity (used in embeddings, search, recommendations) is just a normalized dot product. 
+    When you hear "attention mechanism in transformers" — it's dot products between query and key vectors.
+  </div>
+
+<pre><code><span class="cm"># Dot product in NumPy</span>
+a = np.<span class="fn">array</span>([<span class="num">2</span>, <span class="num">5</span>])
+b = np.<span class="fn">array</span>([-<span class="num">1</span>, <span class="num">3</span>])
+
+<span class="cm"># Three equivalent ways:</span>
+<span class="fn">print</span>(np.<span class="fn">dot</span>(a, b))   <span class="cm"># 13</span>
+<span class="fn">print</span>(a @ b)           <span class="cm"># 13  (@ is the preferred way)</span>
+<span class="fn">print</span>(np.<span class="fn">sum</span>(a * b))   <span class="cm"># 13  (element-wise multiply, then sum)</span>
+
+<span class="cm"># Checking orthogonality</span>
+u = np.<span class="fn">array</span>([<span class="num">1</span>, <span class="num">0</span>])
+v = np.<span class="fn">array</span>([<span class="num">0</span>, <span class="num">1</span>])
+<span class="fn">print</span>(u @ v)  <span class="cm"># 0 → perpendicular!</span>
+
+<span class="cm"># Cosine similarity (used in embeddings)</span>
+<span class="kw">def</span> <span class="fn">cosine_sim</span>(a, b):
+    <span class="kw">return</span> (a @ b) / (np.linalg.<span class="fn">norm</span>(a) * np.linalg.<span class="fn">norm</span>(b))
+
+<span class="fn">print</span>(<span class="fn">cosine_sim</span>(a, b))  <span class="cm"># 0.762...</span>
+</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 3: LINEAR COMBINATIONS, SPAN, AND INDEPENDENCE -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="s3">
+  <div class="section-label">Section 03</div>
+  <h2>Linear Combinations, Span & Independence</h2>
+
+  <h3>Linear combinations</h3>
+  <p>
+    A <strong>linear combination</strong> is what you get when you scale some vectors and add them together:
+  </p>
+
+  <div class="math-block">
+    <span class="label">Linear combination</span>
+    c₁v₁ + c₂v₂ + ... + cₖvₖ
+  </div>
+
+  <p>
+    Where c₁, c₂, ... are scalars (any real numbers) and v₁, v₂, ... are vectors.
+  </p>
+
+  <div class="paper">
+    <strong>Example:</strong> Let v₁ = [1, 0] and v₂ = [0, 1] (the standard basis vectors).<br><br>
+    Then <strong>3v₁ + 2v₂</strong> = 3[1,0] + 2[0,1] = [3, 0] + [0, 2] = <strong>[3, 2]</strong><br><br>
+    In fact, <strong>any</strong> vector [a, b] = a·[1,0] + b·[0,1]. So every 2D vector is a linear combination of these two basis vectors!
+  </div>
+
+  <h3>Span: what can you reach?</h3>
+  <p>
+    The <strong>span</strong> of a set of vectors is the set of ALL possible linear combinations of those vectors.
+    Think: "what's the collection of every vector you can build by scaling and adding these vectors?"
+  </p>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <h5>Span of 1 vector</h5>
+      <p>A line through the origin. You can only stretch/shrink along that one direction.</p>
+    </div>
+    <div class="concept-card">
+      <h5>Span of 2 (independent) vectors</h5>
+      <p>A plane. Like how î and ĵ span all of 2D space.</p>
+    </div>
+    <div class="concept-card">
+      <h5>Span of 2 parallel vectors</h5>
+      <p>Still just a line! The second vector adds nothing new — it's "redundant."</p>
+    </div>
+    <div class="concept-card">
+      <h5>Span of 3 vectors in ℝ³</h5>
+      <p>All of 3D space (if independent), or a plane (if one is redundant), or a line (if two are).</p>
+    </div>
+  </div>
+
+  <h3>Linear independence: no redundancy</h3>
+  <p>
+    Vectors are <strong>linearly independent</strong> if none of them can be written as a linear combination of the others.
+    Equivalently: the only way to get the zero vector from their linear combination is if ALL the scalars are zero.
+  </p>
+
+  <div class="math-block">
+    <span class="label">Definition of linear independence</span>
+    c₁v₁ + c₂v₂ + ... + cₖvₖ = 0 &nbsp;⟹&nbsp; c₁ = c₂ = ... = cₖ = 0
+  </div>
+
+  <div class="paper">
+    <strong>Test: are these linearly independent?</strong><br><br>
+    v₁ = [1, 2], v₂ = [2, 4]<br><br>
+    <div class="step"><span class="step-num">1.</span><span>Check: is v₂ = c · v₁ for some scalar c?</span></div>
+    <div class="step"><span class="step-num">2.</span><span>v₂ = 2 · v₁ = 2[1,2] = [2,4] ✓</span></div>
+    <div class="step"><span class="step-num">3.</span><span><strong>DEPENDENT!</strong> v₂ is just v₁ scaled by 2. These two vectors only span a line, not the full plane.</span></div>
+    <br>
+    <strong>Now try:</strong> v₁ = [1, 0], v₂ = [0, 1]<br>
+    <div class="step"><span class="step-num">1.</span><span>c₁[1,0] + c₂[0,1] = [0,0] means c₁ = 0 and c₂ = 0.</span></div>
+    <div class="step"><span class="step-num">2.</span><span><strong>INDEPENDENT!</strong> Neither is a multiple of the other.</span></div>
+  </div>
+
+  <h3>Basis: the minimal spanning set</h3>
+  <p>
+    A <strong>basis</strong> for a vector space is a set of linearly independent vectors that spans the entire space.
+    In ℝ², you need exactly 2 independent vectors. In ℝⁿ, you need exactly n.
+  </p>
+
+  <p>
+    The standard basis for ℝ³ is: <code>e₁ = [1,0,0]</code>, <code>e₂ = [0,1,0]</code>, <code>e₃ = [0,0,1]</code>.
+    But there are infinitely many valid bases — any 3 independent vectors in ℝ³ work.
+  </p>
+
+  <div class="callout ioai">
+    <span class="callout-tag">IOAI Connection — PCA</span>
+    PCA (Principal Component Analysis) finds a <strong>new basis</strong> for your data — one where the first basis 
+    vector captures the most variance, the second captures the next most, etc. You then keep only the first k basis vectors, 
+    reducing dimensions from n to k. This is Day 7 material, but it's built entirely on these concepts.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 4: MATRICES -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="s4">
+  <div class="section-label">Section 04</div>
+  <h2>What Is a Matrix?</h2>
+
+  <p>
+    A <strong>matrix</strong> is a rectangular grid of numbers. An m×n matrix has m rows and n columns:
+  </p>
+
+  <div class="math-block">
+    <span class="label">A 2×3 matrix (2 rows, 3 columns)</span>
+    A = ⎡ 1 &nbsp; 2 &nbsp; 3 ⎤<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;⎣ 4 &nbsp; 5 &nbsp; 6 ⎦
+  </div>
+
+  <p>But there's a <strong>much deeper way</strong> to think about this. 3Blue1Brown's key insight:</p>
+
+  <div class="callout insight">
+    <span class="callout-tag">The BIG idea (3B1B Video 3)</span>
+    <strong>A matrix IS a transformation.</strong> Its columns tell you where the basis vectors land after the transformation.
+    When you multiply a matrix by a vector, you're applying that transformation to the vector.
+  </div>
+
+  <h3>Matrix-vector multiplication</h3>
+  <p>When you compute Av, you're writing v as a linear combination of A's columns:</p>
+
+  <div class="math-block">
+    <span class="label">Matrix-vector product = linear combination of columns</span>
+    ⎡ 2 &nbsp; 1 ⎤ ⎡ 3 ⎤ &nbsp;=&nbsp; 3·⎡ 2 ⎤ + 1·⎡ 1 ⎤ &nbsp;=&nbsp; ⎡ 7 ⎤<br>
+    ⎣ 0 &nbsp; 3 ⎦ ⎣ 1 ⎦ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ⎣ 0 ⎦ &nbsp;&nbsp;&nbsp; ⎣ 3 ⎦ &nbsp;&nbsp;&nbsp; ⎣ 3 ⎦
+  </div>
+
+  <p>Equivalently, using the row view (dot each row with v):</p>
+
+  <div class="paper">
+    <strong>Row-by-row computation:</strong><br><br>
+    A = [[2, 1], [0, 3]], &nbsp; v = [3, 1]<br><br>
+    <div class="step"><span class="step-num">1.</span><span>Row 1 · v = [2, 1] · [3, 1] = 2×3 + 1×1 = <strong>7</strong></span></div>
+    <div class="step"><span class="step-num">2.</span><span>Row 2 · v = [0, 3] · [3, 1] = 0×3 + 3×1 = <strong>3</strong></span></div>
+    <div class="step"><span class="step-num">3.</span><span>Result: <strong>[7, 3]</strong> ✓</span></div>
+  </div>
+
+  <h3>Matrix-matrix multiplication</h3>
+  <p>
+    <strong>AB means "first apply B, then apply A."</strong> It's function composition for transformations.
+    To compute AB: each column of the result is A times the corresponding column of B.
+  </p>
+
+  <div class="paper">
+    <strong>Compute AB by hand:</strong><br><br>
+    A = [[1, 2], [3, 4]], &nbsp;&nbsp; B = [[5, 6], [7, 8]]<br><br>
+    <div class="step"><span class="step-num">1.</span><span>Column 1 of AB = A · [5, 7] = [1·5+2·7, 3·5+4·7] = [<strong>19</strong>, <strong>43</strong>]</span></div>
+    <div class="step"><span class="step-num">2.</span><span>Column 2 of AB = A · [6, 8] = [1·6+2·8, 3·6+4·8] = [<strong>22</strong>, <strong>50</strong>]</span></div>
+    <div class="step"><span class="step-num">3.</span><span>AB = [[19, 22], [43, 50]]</span></div>
+    <br>
+    <strong>CRITICAL:</strong> AB ≠ BA in general! Matrix multiplication is <strong>NOT commutative</strong>.
+  </div>
+
+<pre><code><span class="cm"># Matrix operations in NumPy</span>
+A = np.<span class="fn">array</span>([[<span class="num">1</span>, <span class="num">2</span>], [<span class="num">3</span>, <span class="num">4</span>]])
+B = np.<span class="fn">array</span>([[<span class="num">5</span>, <span class="num">6</span>], [<span class="num">7</span>, <span class="num">8</span>]])
+v = np.<span class="fn">array</span>([<span class="num">3</span>, <span class="num">1</span>])
+
+<span class="cm"># Matrix-vector product</span>
+<span class="fn">print</span>(A @ v)        <span class="cm"># [5, 13]</span>
+
+<span class="cm"># Matrix-matrix product</span>
+<span class="fn">print</span>(A @ B)        <span class="cm"># [[19, 22], [43, 50]]</span>
+<span class="fn">print</span>(B @ A)        <span class="cm"># [[23, 34], [31, 46]]  ← DIFFERENT!</span>
+
+<span class="cm"># ⚠️ np.dot and @ do the same thing for 2D arrays</span>
+<span class="cm"># But for 1D arrays, * does element-wise, not matrix multiply!</span>
+<span class="fn">print</span>(A * B)        <span class="cm"># [[ 5, 12], [21, 32]]  ← ELEMENT-WISE, not matrix multiply!</span>
+</code></pre>
+
+  <div class="callout warning">
+    <span class="callout-tag">Deadly NumPy trap</span>
+    <code>A * B</code> does <strong>element-wise multiplication</strong> (Hadamard product), NOT matrix multiplication.
+    Always use <code>A @ B</code> or <code>np.dot(A, B)</code> for true matrix products. This mistake will cost you 
+    hours of debugging in IOAI coding problems.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 5: MATRICES AS TRANSFORMATIONS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="s5">
+  <div class="section-label">Section 05</div>
+  <h2>Matrices as Transformations (The Geometric View)</h2>
+
+  <p>
+    This is the <strong>single most important idea</strong> in 3Blue1Brown's series. A 2×2 matrix takes every point 
+    in 2D space and moves it to a new location. The matrix columns tell you where [1,0] and [0,1] end up.
+  </p>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <h5>Identity (no change)</h5>
+      <p><code>[[1,0],[0,1]]</code> — basis vectors stay put. Every point stays where it is.</p>
+    </div>
+    <div class="concept-card">
+      <h5>Scaling</h5>
+      <p><code>[[2,0],[0,3]]</code> — stretch x by 2, y by 3. The unit square becomes a 2×3 rectangle.</p>
+    </div>
+    <div class="concept-card">
+      <h5>Rotation 90°</h5>
+      <p><code>[[0,-1],[1,0]]</code> — î goes to [0,1], ĵ goes to [-1,0]. Everything rotates counter-clockwise.</p>
+    </div>
+    <div class="concept-card">
+      <h5>Shear</h5>
+      <p><code>[[1,1],[0,1]]</code> — î stays at [1,0], ĵ goes to [1,1]. Tilts the space sideways.</p>
+    </div>
+  </div>
+
+  <div class="paper">
+    <strong>How to read any 2×2 matrix geometrically:</strong><br><br>
+    Take A = [[3, 1], [0, 2]]<br><br>
+    <div class="step"><span class="step-num">1.</span><span>Column 1 = [3, 0] → This is where î = [1,0] lands</span></div>
+    <div class="step"><span class="step-num">2.</span><span>Column 2 = [1, 2] → This is where ĵ = [0,1] lands</span></div>
+    <div class="step"><span class="step-num">3.</span><span>The unit square (corners at [0,0], [1,0], [0,1], [1,1]) becomes a <strong>parallelogram</strong> with corners at [0,0], [3,0], [1,2], [4,2]</span></div>
+    <div class="step"><span class="step-num">4.</span><span>The area of that parallelogram = |det(A)| = |3·2 - 1·0| = 6 (we'll cover this next!)</span></div>
+  </div>
+
+<pre><code><span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="kw">def</span> <span class="fn">plot_transformation</span>(A, title=<span class="st">"Transformation"</span>):
+    <span class="cm">"""Visualize how matrix A transforms the unit square."""</span>
+    <span class="cm"># Unit square corners</span>
+    square = np.<span class="fn">array</span>([[<span class="num">0</span>,<span class="num">0</span>], [<span class="num">1</span>,<span class="num">0</span>], [<span class="num">1</span>,<span class="num">1</span>], [<span class="num">0</span>,<span class="num">1</span>], [<span class="num">0</span>,<span class="num">0</span>]]).T
+    
+    <span class="cm"># Transform it</span>
+    transformed = A @ square
+    
+    fig, (ax1, ax2) = plt.<span class="fn">subplots</span>(<span class="num">1</span>, <span class="num">2</span>, figsize=(<span class="num">10</span>, <span class="num">5</span>))
+    
+    <span class="cm"># Before</span>
+    ax1.<span class="fn">fill</span>(square[<span class="num">0</span>], square[<span class="num">1</span>], alpha=<span class="num">0.3</span>, color=<span class="st">'blue'</span>)
+    ax1.<span class="fn">quiver</span>(<span class="num">0</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">0</span>, angles=<span class="st">'xy'</span>, scale=<span class="num">1</span>, scale_units=<span class="st">'xy'</span>, color=<span class="st">'red'</span>, label=<span class="st">'î'</span>)
+    ax1.<span class="fn">quiver</span>(<span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">1</span>, angles=<span class="st">'xy'</span>, scale=<span class="num">1</span>, scale_units=<span class="st">'xy'</span>, color=<span class="st">'green'</span>, label=<span class="st">'ĵ'</span>)
+    ax1.<span class="fn">set_title</span>(<span class="st">"Before"</span>)
+    ax1.<span class="fn">set_xlim</span>(-<span class="num">1</span>, <span class="num">5</span>); ax1.<span class="fn">set_ylim</span>(-<span class="num">1</span>, <span class="num">5</span>)
+    ax1.<span class="fn">set_aspect</span>(<span class="st">'equal'</span>); ax1.<span class="fn">grid</span>(<span class="kw">True</span>); ax1.<span class="fn">legend</span>()
+    
+    <span class="cm"># After</span>
+    ax2.<span class="fn">fill</span>(transformed[<span class="num">0</span>], transformed[<span class="num">1</span>], alpha=<span class="num">0.3</span>, color=<span class="st">'orange'</span>)
+    ax2.<span class="fn">quiver</span>(<span class="num">0</span>,<span class="num">0</span>, A[<span class="num">0</span>,<span class="num">0</span>],A[<span class="num">1</span>,<span class="num">0</span>], angles=<span class="st">'xy'</span>, scale=<span class="num">1</span>, scale_units=<span class="st">'xy'</span>, color=<span class="st">'red'</span>, label=<span class="st">'Aî'</span>)
+    ax2.<span class="fn">quiver</span>(<span class="num">0</span>,<span class="num">0</span>, A[<span class="num">0</span>,<span class="num">1</span>],A[<span class="num">1</span>,<span class="num">1</span>], angles=<span class="st">'xy'</span>, scale=<span class="num">1</span>, scale_units=<span class="st">'xy'</span>, color=<span class="st">'green'</span>, label=<span class="st">'Aĵ'</span>)
+    ax2.<span class="fn">set_title</span>(title)
+    ax2.<span class="fn">set_xlim</span>(-<span class="num">1</span>, <span class="num">5</span>); ax2.<span class="fn">set_ylim</span>(-<span class="num">1</span>, <span class="num">5</span>)
+    ax2.<span class="fn">set_aspect</span>(<span class="st">'equal'</span>); ax2.<span class="fn">grid</span>(<span class="kw">True</span>); ax2.<span class="fn">legend</span>()
+    plt.<span class="fn">show</span>()
+
+<span class="cm"># Try these!</span>
+A = np.<span class="fn">array</span>([[<span class="num">3</span>, <span class="num">1</span>], [<span class="num">0</span>, <span class="num">2</span>]])
+<span class="fn">plot_transformation</span>(A, <span class="st">"A = [[3,1],[0,2]]"</span>)
+</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 6: DETERMINANTS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="s6">
+  <div class="section-label">Section 06</div>
+  <h2>Determinants — The Area Scaling Factor</h2>
+
+  <p>
+    The <strong>determinant</strong> of a matrix tells you <strong>how much the transformation scales area</strong> 
+    (in 2D) or volume (in 3D).
+  </p>
+
+  <div class="math-block">
+    <span class="label">Determinant of a 2×2 matrix</span>
+    det ⎡ a &nbsp; b ⎤ = ad − bc<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;⎣ c &nbsp; d ⎦
+  </div>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <h5>det = 6</h5>
+      <p>Areas get multiplied by 6. The transformation stretches space.</p>
+    </div>
+    <div class="concept-card">
+      <h5>det = 1</h5>
+      <p>Areas preserved. Rotation is a common example.</p>
+    </div>
+    <div class="concept-card">
+      <h5>det = -2</h5>
+      <p>Areas scale by 2, but orientation <strong>flips</strong> (like a mirror). The negative means space is "turned inside out."</p>
+    </div>
+    <div class="concept-card">
+      <h5>det = 0</h5>
+      <p>Space gets <strong>squished to a lower dimension</strong> — a plane collapses to a line, or a line to a point. The matrix is NOT invertible.</p>
+    </div>
+  </div>
+
+  <div class="paper">
+    <strong>Compute these determinants:</strong><br><br>
+    <div class="step"><span class="step-num">1.</span><span>A = [[3, 1], [0, 2]] → det = 3·2 − 1·0 = <strong>6</strong></span></div>
+    <div class="step"><span class="step-num">2.</span><span>B = [[1, 2], [3, 6]] → det = 1·6 − 2·3 = <strong>0</strong> → Not invertible! (Row 2 = 3 × Row 1)</span></div>
+    <div class="step"><span class="step-num">3.</span><span>Rotation = [[0, -1], [1, 0]] → det = 0·0 − (−1)·1 = <strong>1</strong> → Area preserved ✓</span></div>
+  </div>
+
+  <h3>3×3 determinant (cofactor expansion)</h3>
+
+  <p>For a 3×3 matrix, expand along the first row:</p>
+
+  <div class="math-block">
+    <span class="label">3×3 determinant</span>
+    det ⎡ a &nbsp; b &nbsp; c ⎤<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;⎢ d &nbsp; e &nbsp; f ⎥ = a(ei−fh) − b(di−fg) + c(dh−eg)<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;⎣ g &nbsp; h &nbsp; i ⎦
+  </div>
+
+  <div class="paper">
+    <strong>Example: 3×3 determinant by hand</strong><br><br>
+    M = [[2, 1, 0], [0, 3, 1], [1, 0, 2]]<br><br>
+    <div class="step"><span class="step-num">1.</span><span>= 2·det[[3,1],[0,2]] − 1·det[[0,1],[1,2]] + 0·det[[0,3],[1,0]]</span></div>
+    <div class="step"><span class="step-num">2.</span><span>= 2·(3·2 − 1·0) − 1·(0·2 − 1·1) + 0</span></div>
+    <div class="step"><span class="step-num">3.</span><span>= 2·(6) − 1·(−1) + 0</span></div>
+    <div class="step"><span class="step-num">4.</span><span>= 12 + 1 = <strong>13</strong></span></div>
+  </div>
+
+<pre><code><span class="cm"># Determinants in NumPy</span>
+A = np.<span class="fn">array</span>([[<span class="num">3</span>, <span class="num">1</span>], [<span class="num">0</span>, <span class="num">2</span>]])
+<span class="fn">print</span>(np.linalg.<span class="fn">det</span>(A))  <span class="cm"># 6.0</span>
+
+M = np.<span class="fn">array</span>([[<span class="num">2</span>,<span class="num">1</span>,<span class="num">0</span>], [<span class="num">0</span>,<span class="num">3</span>,<span class="num">1</span>], [<span class="num">1</span>,<span class="num">0</span>,<span class="num">2</span>]])
+<span class="fn">print</span>(np.linalg.<span class="fn">det</span>(M))  <span class="cm"># 13.0</span>
+
+<span class="cm"># Singular matrix (det = 0)</span>
+S = np.<span class="fn">array</span>([[<span class="num">1</span>, <span class="num">2</span>], [<span class="num">3</span>, <span class="num">6</span>]])
+<span class="fn">print</span>(np.linalg.<span class="fn">det</span>(S))  <span class="cm"># ≈ 0.0 (might show tiny float error)</span>
+</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 7: INVERSE -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="s7">
+  <div class="section-label">Section 07</div>
+  <h2>Matrix Inverse — Undoing a Transformation</h2>
+
+  <p>
+    The <strong>inverse</strong> A⁻¹ is the matrix that "undoes" A. If you apply A then A⁻¹, you get back where you started:
+  </p>
+
+  <div class="math-block">
+    <span class="label">Inverse definition</span>
+    A · A⁻¹ = A⁻¹ · A = I &nbsp;&nbsp;&nbsp; (where I is the identity matrix)
+  </div>
+
+  <p><strong>A matrix is invertible if and only if its determinant is non-zero.</strong> If det(A) = 0, the transformation squishes 
+    space into a lower dimension — you can't unsquish it.</p>
+
+  <h3>2×2 inverse formula (memorize this)</h3>
+
+  <div class="math-block">
+    <span class="label">2×2 inverse</span>
+    ⎡ a &nbsp; b ⎤⁻¹ &nbsp;=&nbsp; &nbsp;1&nbsp;&nbsp; ⎡ &nbsp;d &nbsp; −b ⎤<br>
+    ⎣ c &nbsp; d ⎦ &nbsp;&nbsp;&nbsp;&nbsp; ad−bc ⎣ −c &nbsp;&nbsp; a ⎦
+  </div>
+
+  <p>Recipe: swap a and d, negate b and c, divide by determinant.</p>
+
+  <div class="paper">
+    <strong>Find the inverse of A = [[3, 1], [0, 2]]:</strong><br><br>
+    <div class="step"><span class="step-num">1.</span><span>det(A) = 3·2 − 1·0 = 6</span></div>
+    <div class="step"><span class="step-num">2.</span><span>Swap diagonal: [[2, _], [_, 3]], Negate off-diagonal: [[2, −1], [0, 3]]</span></div>
+    <div class="step"><span class="step-num">3.</span><span>A⁻¹ = (1/6) · [[2, −1], [0, 3]] = [[1/3, −1/6], [0, 1/2]]</span></div>
+    <br>
+    <strong>Verify:</strong> A · A⁻¹ = [[3,1],[0,2]] · [[1/3, −1/6],[0, 1/2]]<br>
+    <div class="step"><span class="step-num">4.</span><span>Row 1: [3·(1/3)+1·0, 3·(−1/6)+1·(1/2)] = [1, −1/2+1/2] = [<strong>1, 0</strong>] ✓</span></div>
+    <div class="step"><span class="step-num">5.</span><span>Row 2: [0·(1/3)+2·0, 0·(−1/6)+2·(1/2)] = [0, 1] = [<strong>0, 1</strong>] ✓</span></div>
+    <div class="step"><span class="step-num">6.</span><span>Result is identity matrix I = [[1,0],[0,1]]. The inverse is correct!</span></div>
+  </div>
+
+<pre><code>A = np.<span class="fn">array</span>([[<span class="num">3</span>, <span class="num">1</span>], [<span class="num">0</span>, <span class="num">2</span>]])
+
+<span class="cm"># NumPy inverse</span>
+A_inv = np.linalg.<span class="fn">inv</span>(A)
+<span class="fn">print</span>(A_inv)
+<span class="cm"># [[ 0.333  -0.167]</span>
+<span class="cm">#  [ 0.      0.5  ]]</span>
+
+<span class="cm"># Verify: should be identity</span>
+<span class="fn">print</span>(A @ A_inv)
+<span class="cm"># [[1. 0.]</span>
+<span class="cm">#  [0. 1.]]</span>
+
+<span class="cm"># YOUR CODING TASK: Implement 2×2 inverse from scratch</span>
+<span class="kw">def</span> <span class="fn">my_inverse_2x2</span>(A):
+    a, b = A[<span class="num">0</span>, <span class="num">0</span>], A[<span class="num">0</span>, <span class="num">1</span>]
+    c, d = A[<span class="num">1</span>, <span class="num">0</span>], A[<span class="num">1</span>, <span class="num">1</span>]
+    det = a * d - b * c
+    <span class="kw">if</span> <span class="fn">abs</span>(det) < <span class="num">1e-10</span>:
+        <span class="kw">raise</span> <span class="fn">ValueError</span>(<span class="st">"Matrix is singular (det=0), cannot invert"</span>)
+    <span class="kw">return</span> (<span class="num">1</span> / det) * np.<span class="fn">array</span>([[d, -b], [-c, a]])
+
+<span class="cm"># Test it</span>
+<span class="fn">print</span>(<span class="fn">my_inverse_2x2</span>(A))
+<span class="fn">print</span>(np.<span class="fn">allclose</span>(A @ <span class="fn">my_inverse_2x2</span>(A), np.<span class="fn">eye</span>(<span class="num">2</span>)))  <span class="cm"># True</span>
+</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 8: COLUMN SPACE & NULL SPACE -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="s8">
+  <div class="section-label">Section 08</div>
+  <h2>Column Space & Null Space</h2>
+
+  <h3>Column space (image): where can A send things?</h3>
+
+  <p>
+    The <strong>column space</strong> of A (also called the "image" or "range") is the set of all possible outputs 
+    when you multiply A by any vector. It's the <strong>span of A's columns</strong>.
+  </p>
+
+  <div class="paper">
+    <strong>Example:</strong><br>
+    A = [[1, 2], [2, 4]]<br><br>
+    <div class="step"><span class="step-num">1.</span><span>Column 1 = [1, 2], Column 2 = [2, 4] = 2 · [1, 2]</span></div>
+    <div class="step"><span class="step-num">2.</span><span>Column 2 is just a scaled version of column 1!</span></div>
+    <div class="step"><span class="step-num">3.</span><span>Column space = span{[1, 2]} = a <strong>line</strong> through the origin in direction [1, 2]</span></div>
+    <div class="step"><span class="step-num">4.</span><span>No matter what vector you multiply A by, the output always lands on this line.</span></div>
+  </div>
+
+  <h3>Null space (kernel): what gets sent to zero?</h3>
+
+  <p>
+    The <strong>null space</strong> is the set of all vectors v such that Av = 0. These vectors get 
+    "crushed to nothing" by the transformation.
+  </p>
+
+  <div class="paper">
+    <strong>Find the null space of A = [[1, 2], [2, 4]]:</strong><br><br>
+    <div class="step"><span class="step-num">1.</span><span>We need Av = 0, i.e., [[1,2],[2,4]] · [x,y] = [0,0]</span></div>
+    <div class="step"><span class="step-num">2.</span><span>Row 1: x + 2y = 0 → x = −2y</span></div>
+    <div class="step"><span class="step-num">3.</span><span>Row 2: 2x + 4y = 0 → same equation (2 times row 1)</span></div>
+    <div class="step"><span class="step-num">4.</span><span>Solution: v = y · [−2, 1] for any y</span></div>
+    <div class="step"><span class="step-num">5.</span><span>Null space = span{[−2, 1]} = a <strong>line</strong> in direction [−2, 1]</span></div>
+  </div>
+
+  <div class="callout insight">
+    <span class="callout-tag">The rank-nullity theorem</span>
+    <strong>dim(column space) + dim(null space) = number of columns</strong><br>
+    For our 2×2 example: rank 1 + nullity 1 = 2 columns. ✓<br>
+    This is guaranteed to appear on IOAI theory exams.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 9: RANK -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="s9">
+  <div class="section-label">Section 09</div>
+  <h2>Rank — How Many Dimensions Does the Output Have?</h2>
+
+  <p>
+    The <strong>rank</strong> of a matrix = the dimension of its column space = the number of linearly independent columns.
+    It tells you the "true dimensionality" of the transformation's output.
+  </p>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <h5>Full rank (2×2)</h5>
+      <p>Rank = 2. Both columns independent. Maps 2D to 2D. det ≠ 0. Invertible.</p>
+    </div>
+    <div class="concept-card">
+      <h5>Rank 1 (2×2)</h5>
+      <p>One column is a multiple of the other. Maps 2D → a line. det = 0. Not invertible.</p>
+    </div>
+    <div class="concept-card">
+      <h5>Rank 0</h5>
+      <p>The zero matrix. Everything maps to the origin.</p>
+    </div>
+    <div class="concept-card">
+      <h5>3×3, rank 2</h5>
+      <p>Maps 3D space to a plane. One column is a combination of the other two.</p>
+    </div>
+  </div>
+
+  <div class="paper">
+    <strong>Find rank of M = [[1,2,3],[2,4,6],[1,1,1]] without a calculator:</strong><br><br>
+    <div class="step"><span class="step-num">1.</span><span>Row 2 = 2 × Row 1 → Row 2 is redundant</span></div>
+    <div class="step"><span class="step-num">2.</span><span>After eliminating Row 2, we have rows [1,2,3] and [1,1,1]</span></div>
+    <div class="step"><span class="step-num">3.</span><span>These two rows are NOT multiples of each other (independent)</span></div>
+    <div class="step"><span class="step-num">4.</span><span><strong>Rank = 2</strong></span></div>
+    <div class="step"><span class="step-num">5.</span><span>Geometric meaning: 3 columns live in a <strong>2D plane</strong> inside 3D space, not all of 3D.</span></div>
+  </div>
+
+<pre><code><span class="cm"># Rank in NumPy</span>
+M = np.<span class="fn">array</span>([[<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>],[<span class="num">2</span>,<span class="num">4</span>,<span class="num">6</span>],[<span class="num">1</span>,<span class="num">1</span>,<span class="num">1</span>]])
+<span class="fn">print</span>(np.linalg.<span class="fn">matrix_rank</span>(M))  <span class="cm"># 2</span>
+
+<span class="cm"># Full rank matrix</span>
+F = np.<span class="fn">array</span>([[<span class="num">1</span>,<span class="num">0</span>,<span class="num">0</span>],[<span class="num">0</span>,<span class="num">1</span>,<span class="num">0</span>],[<span class="num">0</span>,<span class="num">0</span>,<span class="num">1</span>]])
+<span class="fn">print</span>(np.linalg.<span class="fn">matrix_rank</span>(F))  <span class="cm"># 3</span>
+</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 10: SYSTEMS OF LINEAR EQUATIONS & GAUSSIAN ELIMINATION -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="s10">
+  <div class="section-label">Section 10</div>
+  <h2>Systems of Linear Equations & Gaussian Elimination</h2>
+
+  <p>
+    A system of linear equations is just a matrix equation <code>Ax = b</code>. The question: "given transformation A 
+    and desired output b, what input x gives us that output?"
+  </p>
+
+  <div class="math-block">
+    <span class="label">System → Matrix form</span>
+    x + 2y − z = 3 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ⎡ 1 &nbsp; 2 &nbsp;−1 ⎤ ⎡ x ⎤ &nbsp;&nbsp; ⎡ 3 ⎤<br>
+    2x + y + z = 5 &nbsp;&nbsp;&nbsp; → &nbsp;&nbsp; ⎢ 2 &nbsp; 1 &nbsp;&nbsp;1 ⎥ ⎢ y ⎥ = ⎢ 5 ⎥<br>
+    x − y + 2z = 1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ⎣ 1 &nbsp;−1 &nbsp;&nbsp;2 ⎦ ⎣ z ⎦ &nbsp;&nbsp; ⎣ 1 ⎦
+  </div>
+
+  <h3>Gaussian elimination: the systematic method</h3>
+
+  <p>
+    The idea: use row operations to turn the matrix into an upper triangular form, then back-substitute.
+    The allowed operations are: (1) swap two rows, (2) multiply a row by a non-zero scalar, (3) add a multiple of one row to another.
+  </p>
+
+  <div class="paper">
+    <strong>Solve by Gaussian elimination:</strong><br>
+    x + 2y − z = 3 &nbsp;&nbsp;(R1)<br>
+    2x + y + z = 5 &nbsp;&nbsp;(R2)<br>
+    x − y + 2z = 1 &nbsp;&nbsp;(R3)<br><br>
+
+    <strong>Step 1: Eliminate x from R2 and R3</strong><br>
+    <div class="step"><span class="step-num">1.</span><span>R2 ← R2 − 2·R1: &nbsp;(2−2)x + (1−4)y + (1+2)z = 5−6 → <strong>−3y + 3z = −1</strong></span></div>
+    <div class="step"><span class="step-num">2.</span><span>R3 ← R3 − 1·R1: &nbsp;(1−1)x + (−1−2)y + (2+1)z = 1−3 → <strong>−3y + 3z = −2</strong></span></div>
+    <br>
+    <strong>Step 2: Eliminate y from R3</strong><br>
+    <div class="step"><span class="step-num">3.</span><span>R3 ← R3 − R2: &nbsp;0y + 0z = −2−(−1) → <strong>0 = −1</strong></span></div>
+    <br>
+    <div class="step"><span class="step-num">4.</span><span><strong>CONTRADICTION!</strong> 0 = −1 is impossible. This system has <strong>no solution</strong>.</span></div>
+    <div class="step"><span class="step-num">5.</span><span>Geometrically: the three planes don't all meet at a single point.</span></div>
+  </div>
+
+  <p>Let me also show a system that <em>does</em> have a solution:</p>
+
+  <div class="paper">
+    <strong>Solve: x + 2y = 5, &nbsp; 3x + y = 10</strong><br><br>
+    Augmented matrix: [[1, 2 | 5], [3, 1 | 10]]<br><br>
+    <div class="step"><span class="step-num">1.</span><span>R2 ← R2 − 3·R1: &nbsp;[0, 1−6, 10−15] = [0, −5, −5]</span></div>
+    <div class="step"><span class="step-num">2.</span><span>From R2: −5y = −5 → <strong>y = 1</strong></span></div>
+    <div class="step"><span class="step-num">3.</span><span>Back-substitute into R1: x + 2(1) = 5 → <strong>x = 3</strong></span></div>
+    <div class="step"><span class="step-num">4.</span><span>Solution: <strong>(x, y) = (3, 1)</strong></span></div>
+    <div class="step"><span class="step-num">5.</span><span>Verify: 1(3) + 2(1) = 5 ✓, &nbsp; 3(3) + 1(1) = 10 ✓</span></div>
+  </div>
+
+<pre><code><span class="cm"># Solving systems in NumPy</span>
+A = np.<span class="fn">array</span>([[<span class="num">1</span>, <span class="num">2</span>], [<span class="num">3</span>, <span class="num">1</span>]])
+b = np.<span class="fn">array</span>([<span class="num">5</span>, <span class="num">10</span>])
+x = np.linalg.<span class="fn">solve</span>(A, b)
+<span class="fn">print</span>(x)                      <span class="cm"># [3. 1.]</span>
+<span class="fn">print</span>(np.<span class="fn">allclose</span>(A @ x, b))  <span class="cm"># True</span>
+
+<span class="cm"># YOUR TASK: Implement Gaussian elimination from scratch</span>
+<span class="kw">def</span> <span class="fn">gauss_solve</span>(A, b):
+    <span class="cm">"""Solve Ax = b using Gaussian elimination with back-substitution."""</span>
+    n = <span class="fn">len</span>(b)
+    <span class="cm"># Build augmented matrix [A | b]</span>
+    aug = np.<span class="fn">hstack</span>([A.<span class="fn">astype</span>(<span class="fn">float</span>), b.<span class="fn">reshape</span>(-<span class="num">1</span>, <span class="num">1</span>).<span class="fn">astype</span>(<span class="fn">float</span>)])
+    
+    <span class="cm"># Forward elimination</span>
+    <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):
+        <span class="cm"># Find pivot (row with largest absolute value in this column)</span>
+        max_row = col + np.<span class="fn">argmax</span>(np.<span class="fn">abs</span>(aug[col:, col]))
+        aug[[col, max_row]] = aug[[max_row, col]]  <span class="cm"># swap rows</span>
+        
+        <span class="cm"># Eliminate below</span>
+        <span class="kw">for</span> row <span class="kw">in</span> <span class="fn">range</span>(col + <span class="num">1</span>, n):
+            factor = aug[row, col] / aug[col, col]
+            aug[row] -= factor * aug[col]
+    
+    <span class="cm"># Back-substitution</span>
+    x = np.<span class="fn">zeros</span>(n)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n - <span class="num">1</span>, -<span class="num">1</span>, -<span class="num">1</span>):
+        x[i] = (aug[i, -<span class="num">1</span>] - aug[i, :-<span class="num">1</span>] @ x) / aug[i, i]
+    <span class="kw">return</span> x
+
+<span class="cm"># Test</span>
+x = <span class="fn">gauss_solve</span>(A, b)
+<span class="fn">print</span>(x)  <span class="cm"># [3. 1.]</span>
+</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 11: EIGENVALUES AND EIGENVECTORS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="s11">
+  <div class="section-label">Section 11</div>
+  <h2>Eigenvalues & Eigenvectors — The Most Important Concept</h2>
+
+  <p>
+    This is the <strong>crown jewel of Day 1</strong> and one of the most important concepts in all of ML.
+    Here's the idea in plain English:
+  </p>
+
+  <div class="callout insight">
+    <span class="callout-tag">The core idea</span>
+    Most vectors change direction when you apply a matrix transformation. But some special vectors 
+    only get <strong>stretched or compressed</strong> — they stay on the same line. These are <strong>eigenvectors</strong>.
+    The factor by which they get scaled is the <strong>eigenvalue</strong>.
+  </div>
+
+  <div class="math-block">
+    <span class="label">Eigenvalue equation</span>
+    Av = λv
+  </div>
+
+  <p>
+    Read this as: "when I apply transformation A to vector v, the result is just v scaled by λ."
+    Here, v is the <strong>eigenvector</strong> and λ (lambda) is the <strong>eigenvalue</strong>.
+  </p>
+
+  <h3>How to find eigenvalues: the characteristic equation</h3>
+
+  <p>Starting from Av = λv, rearrange:</p>
+
+  <div class="math-block">
+    <span class="label">Derivation</span>
+    Av = λv<br>
+    Av − λv = 0<br>
+    (A − λI)v = 0<br><br>
+    For a non-zero v to exist, (A − λI) must be singular:<br><br>
+    <strong>det(A − λI) = 0</strong> ← This is the characteristic equation!
+  </div>
+
+  <div class="paper">
+    <strong>Find eigenvalues and eigenvectors of A = [[3, 1], [0, 2]]:</strong><br><br>
+
+    <strong>Step 1: Characteristic equation</strong><br>
+    <div class="step"><span class="step-num">1.</span><span>A − λI = [[3−λ, 1], [0, 2−λ]]</span></div>
+    <div class="step"><span class="step-num">2.</span><span>det(A − λI) = (3−λ)(2−λ) − (1)(0) = (3−λ)(2−λ)</span></div>
+    <div class="step"><span class="step-num">3.</span><span>Set = 0: (3−λ)(2−λ) = 0</span></div>
+    <div class="step"><span class="step-num">4.</span><span><strong>λ₁ = 3, λ₂ = 2</strong></span></div>
+    <br>
+    <strong>Step 2: Find eigenvector for λ₁ = 3</strong><br>
+    <div class="step"><span class="step-num">5.</span><span>(A − 3I)v = 0 → [[0, 1], [0, −1]] · [x, y] = [0, 0]</span></div>
+    <div class="step"><span class="step-num">6.</span><span>Row 1: 0·x + 1·y = 0 → y = 0</span></div>
+    <div class="step"><span class="step-num">7.</span><span>x is free. So v₁ = t·[1, 0] for any t ≠ 0. Pick <strong>v₁ = [1, 0]</strong></span></div>
+    <br>
+    <strong>Step 3: Find eigenvector for λ₂ = 2</strong><br>
+    <div class="step"><span class="step-num">8.</span><span>(A − 2I)v = 0 → [[1, 1], [0, 0]] · [x, y] = [0, 0]</span></div>
+    <div class="step"><span class="step-num">9.</span><span>Row 1: x + y = 0 → x = −y</span></div>
+    <div class="step"><span class="step-num">10.</span><span>Pick y = 1, then x = −1. <strong>v₂ = [−1, 1]</strong></span></div>
+    <br>
+    <strong>Step 4: Verify</strong><br>
+    <div class="step"><span class="step-num">11.</span><span>Av₁ = [[3,1],[0,2]] · [1,0] = [3, 0] = 3 · [1, 0] = λ₁ · v₁ ✓</span></div>
+    <div class="step"><span class="step-num">12.</span><span>Av₂ = [[3,1],[0,2]] · [−1,1] = [−3+1, 0+2] = [−2, 2] = 2 · [−1, 1] = λ₂ · v₂ ✓</span></div>
+  </div>
+
+  <h3>Shortcut for 2×2 eigenvalues</h3>
+
+  <p>For a 2×2 matrix [[a,b],[c,d]], the characteristic equation is always a quadratic:</p>
+
+  <div class="math-block">
+    <span class="label">2×2 eigenvalue formula</span>
+    λ² − (a+d)λ + (ad−bc) = 0<br><br>
+    λ² − trace(A)·λ + det(A) = 0<br><br>
+    where trace(A) = a + d (sum of diagonal)
+  </div>
+
+  <p>Then use the quadratic formula. For A = [[3,1],[0,2]]: λ² − 5λ + 6 = 0 → (λ−3)(λ−2) = 0 → λ = 3, 2. ✓</p>
+
+<pre><code><span class="cm"># Eigenvalues and eigenvectors in NumPy</span>
+A = np.<span class="fn">array</span>([[<span class="num">3</span>, <span class="num">1</span>], [<span class="num">0</span>, <span class="num">2</span>]])
+
+eigenvalues, eigenvectors = np.linalg.<span class="fn">eig</span>(A)
+
+<span class="fn">print</span>(<span class="st">"Eigenvalues:"</span>, eigenvalues)    <span class="cm"># [3. 2.]</span>
+<span class="fn">print</span>(<span class="st">"Eigenvectors (columns):"</span>)
+<span class="fn">print</span>(eigenvectors)
+<span class="cm"># [[ 1.    -0.707]</span>
+<span class="cm">#  [ 0.     0.707]]</span>
+<span class="cm"># Note: NumPy normalizes eigenvectors to unit length</span>
+
+<span class="cm"># Verify: A @ v = lambda * v</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">2</span>):
+    v = eigenvectors[:, i]   <span class="cm"># i-th eigenvector is i-th COLUMN</span>
+    lam = eigenvalues[i]
+    <span class="fn">print</span>(<span class="st">f"A @ v{i} = {A @ v}"</span>)
+    <span class="fn">print</span>(<span class="st">f"λ{i} * v{i} = {lam * v}"</span>)
+    <span class="fn">print</span>(<span class="st">f"Match: {np.allclose(A @ v, lam * v)}"</span>)
+    <span class="fn">print</span>()
+</code></pre>
+
+  <div class="callout ioai">
+    <span class="callout-tag">Why IOAI cares about eigenvalues</span>
+    <strong>Eigenvalues are EVERYWHERE in ML:</strong>
+    <ul style="margin-top:0.5rem">
+      <li><strong>PCA:</strong> The principal components ARE the eigenvectors of the covariance matrix. The eigenvalues tell you how much variance each component captures.</li>
+      <li><strong>Google PageRank:</strong> The ranking of web pages is the dominant eigenvector of the link matrix.</li>
+      <li><strong>Stability of training:</strong> If the eigenvalues of the Hessian matrix of your loss are too large, gradient descent will diverge.</li>
+      <li><strong>Kernel methods:</strong> Proving a kernel is valid requires showing all eigenvalues of the Gram matrix are ≥ 0 (positive semi-definite).</li>
+    </ul>
+    IOAI 2024 had a theory question asking to prove rank(AᵀA) = rank(A), which requires understanding null spaces and eigenvalues.
+  </div>
+
+  <h3>What eigenvalues tell you geometrically</h3>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <h5>λ > 1</h5>
+      <p>The eigenvector gets <strong>stretched</strong>. The transformation expands along this direction.</p>
+    </div>
+    <div class="concept-card">
+      <h5>0 < λ < 1</h5>
+      <p>The eigenvector gets <strong>compressed</strong>. The transformation shrinks along this direction.</p>
+    </div>
+    <div class="concept-card">
+      <h5>λ = 0</h5>
+      <p>The eigenvector gets sent to <strong>zero</strong>. This direction is in the null space. Matrix is singular.</p>
+    </div>
+    <div class="concept-card">
+      <h5>λ < 0</h5>
+      <p>The eigenvector gets <strong>flipped and scaled</strong>. Direction reverses.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 12: PRACTICE PROBLEMS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="s12">
+  <div class="section-label">Section 12</div>
+  <h2>Day 1 Practice Problems — All Worked Out</h2>
+
+  <h3>Paper Problem 1: Gaussian Elimination</h3>
+
+  <details>
+    <summary>Solve: x + 2y = 5, &nbsp; 2x + y = 4 &nbsp; (click to see full solution)</summary>
+    <div class="inner">
+      <div class="paper">
+        <div class="step"><span class="step-num">1.</span><span>Augmented: [[1, 2 | 5], [2, 1 | 4]]</span></div>
+        <div class="step"><span class="step-num">2.</span><span>R2 ← R2 − 2·R1: [0, −3 | −6]</span></div>
+        <div class="step"><span class="step-num">3.</span><span>From R2: −3y = −6 → y = 2</span></div>
+        <div class="step"><span class="step-num">4.</span><span>Back-sub into R1: x + 4 = 5 → x = 1</span></div>
+        <div class="step"><span class="step-num">5.</span><span>Solution: <strong>(x, y) = (1, 2)</strong></span></div>
+        <div class="step"><span class="step-num">6.</span><span>Verify: 1+4=5 ✓, 2+2=4 ✓</span></div>
+      </div>
+    </div>
+  </details>
+
+  <h3>Paper Problem 2: If A is invertible and AB = AC, prove B = C</h3>
+
+  <details>
+    <summary>Click to see proof</summary>
+    <div class="inner">
+      <div class="paper">
+        <div class="step"><span class="step-num">1.</span><span>Given: AB = AC and A is invertible (so A⁻¹ exists)</span></div>
+        <div class="step"><span class="step-num">2.</span><span>Left-multiply both sides by A⁻¹:</span></div>
+        <div class="step"><span class="step-num">3.</span><span>A⁻¹(AB) = A⁻¹(AC)</span></div>
+        <div class="step"><span class="step-num">4.</span><span>(A⁻¹A)B = (A⁻¹A)C &nbsp;&nbsp; (matrix multiplication is associative)</span></div>
+        <div class="step"><span class="step-num">5.</span><span>IB = IC</span></div>
+        <div class="step"><span class="step-num">6.</span><span><strong>B = C</strong> &nbsp; ∎</span></div>
+        <br>
+        <strong>Where does this fail if A is not invertible?</strong><br>
+        <div class="step"><span class="step-num">7.</span><span>If A is not invertible, A⁻¹ does not exist, so we can't do Step 2.</span></div>
+        <div class="step"><span class="step-num">8.</span><span>Counterexample: A = [[1,2],[2,4]], B = [[1,0],[0,0]], C = [[0,0],[0.5,0]]</span></div>
+        <div class="step"><span class="step-num">9.</span><span>AB = [[1,0],[2,0]] = AC, but B ≠ C! The null space "hides" the difference.</span></div>
+      </div>
+    </div>
+  </details>
+
+  <h3>Paper Problem 3: Eigenvalues of [[3,1],[0,2]]</h3>
+
+  <details>
+    <summary>Click to see solution (fully worked above in Section 11)</summary>
+    <div class="inner">
+      <p>See Section 11 above for the complete step-by-step solution. Summary: eigenvalues λ = 3, 2 with eigenvectors [1,0] and [−1,1].</p>
+    </div>
+  </details>
+
+  <h3>Paper Problem 4: Find rank of [[1,2,3],[2,4,6],[1,1,1]]</h3>
+
+  <details>
+    <summary>Click to see solution</summary>
+    <div class="inner">
+      <div class="paper">
+        <div class="step"><span class="step-num">1.</span><span>Row 2 = 2 × Row 1, so it's redundant.</span></div>
+        <div class="step"><span class="step-num">2.</span><span>Row reduce: R2 ← R2 − 2R1 → [0, 0, 0]</span></div>
+        <div class="step"><span class="step-num">3.</span><span>R3 ← R3 − R1 → [0, −1, −2]</span></div>
+        <div class="step"><span class="step-num">4.</span><span>Result: [[1,2,3], [0,0,0], [0,−1,−2]]</span></div>
+        <div class="step"><span class="step-num">5.</span><span>2 non-zero rows → <strong>rank = 2</strong></span></div>
+        <div class="step"><span class="step-num">6.</span><span>Geometrically: the 3 column vectors [1,2,1], [2,4,1], [3,6,1] all lie in a 2D plane inside ℝ³.</span></div>
+      </div>
+    </div>
+  </details>
+
+  <h3>IOAI-Style Problem: Prove rank(AᵀA) = rank(A)</h3>
+
+  <details>
+    <summary>Click to see proof (this is the kind of problem IOAI asks!)</summary>
+    <div class="inner">
+      <div class="paper">
+        <strong>Strategy:</strong> Show Ax = 0 and AᵀAx = 0 have the same solutions. Then by rank-nullity, they have the same rank.<br><br>
+
+        <strong>Direction 1: If Ax = 0, then AᵀAx = 0</strong><br>
+        <div class="step"><span class="step-num">1.</span><span>If Ax = 0, then Aᵀ(Ax) = Aᵀ · 0 = 0</span></div>
+        <div class="step"><span class="step-num">2.</span><span>So AᵀAx = 0 ✓</span></div>
+        <br>
+        <strong>Direction 2: If AᵀAx = 0, then Ax = 0</strong><br>
+        <div class="step"><span class="step-num">3.</span><span>Assume AᵀAx = 0</span></div>
+        <div class="step"><span class="step-num">4.</span><span>Left-multiply by xᵀ: xᵀAᵀAx = 0</span></div>
+        <div class="step"><span class="step-num">5.</span><span>Notice: xᵀAᵀ = (Ax)ᵀ, so (Ax)ᵀ(Ax) = 0</span></div>
+        <div class="step"><span class="step-num">6.</span><span>This equals ‖Ax‖² = 0 (the squared length of Ax)</span></div>
+        <div class="step"><span class="step-num">7.</span><span>A squared length can only be 0 if the vector itself is 0, so <strong>Ax = 0</strong> ✓</span></div>
+        <br>
+        <strong>Conclusion:</strong><br>
+        <div class="step"><span class="step-num">8.</span><span>null(A) = null(AᵀA) → they have the same nullity</span></div>
+        <div class="step"><span class="step-num">9.</span><span>Both A and AᵀA have the same number of columns (n)</span></div>
+        <div class="step"><span class="step-num">10.</span><span>By rank-nullity: rank = (# columns) − nullity</span></div>
+        <div class="step"><span class="step-num">11.</span><span>Same # columns, same nullity → <strong>same rank</strong> ∎</span></div>
+      </div>
+      <div class="callout ioai">
+        <span class="callout-tag">Why this matters for ML</span>
+        This proof is essential because in least-squares regression, we solve AᵀAx = Aᵀb (the "normal equation"). 
+        This result guarantees that the normal equation loses no information compared to the original system Ax = b.
+      </div>
+    </div>
+  </details>
+
+  <h3>Coding Problem: Complete Transformation Visualizer</h3>
+
+<pre><code><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+
+<span class="kw">def</span> <span class="fn">full_visualizer</span>(A):
+    <span class="cm">"""Complete Day 1 coding task: visualize matrix transformation + eigenvectors."""</span>
+    <span class="cm"># Unit square</span>
+    square = np.<span class="fn">array</span>([[<span class="num">0</span>,<span class="num">1</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">0</span>], [<span class="num">0</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">1</span>,<span class="num">0</span>]])
+    transformed = A @ square
+    
+    <span class="cm"># Eigenstuff</span>
+    vals, vecs = np.linalg.<span class="fn">eig</span>(A)
+    
+    fig, axes = plt.<span class="fn">subplots</span>(<span class="num">1</span>, <span class="num">2</span>, figsize=(<span class="num">12</span>, <span class="num">6</span>))
+    
+    <span class="kw">for</span> ax <span class="kw">in</span> axes:
+        ax.<span class="fn">set_xlim</span>(-<span class="num">4</span>, <span class="num">6</span>); ax.<span class="fn">set_ylim</span>(-<span class="num">4</span>, <span class="num">6</span>)
+        ax.<span class="fn">set_aspect</span>(<span class="st">'equal'</span>); ax.<span class="fn">grid</span>(<span class="kw">True</span>, alpha=<span class="num">0.3</span>)
+        ax.<span class="fn">axhline</span>(y=<span class="num">0</span>, color=<span class="st">'gray'</span>, lw=<span class="num">0.5</span>)
+        ax.<span class="fn">axvline</span>(x=<span class="num">0</span>, color=<span class="st">'gray'</span>, lw=<span class="num">0.5</span>)
+    
+    <span class="cm"># Before</span>
+    axes[<span class="num">0</span>].<span class="fn">fill</span>(square[<span class="num">0</span>], square[<span class="num">1</span>], alpha=<span class="num">0.2</span>, color=<span class="st">'steelblue'</span>)
+    axes[<span class="num">0</span>].<span class="fn">plot</span>(square[<span class="num">0</span>], square[<span class="num">1</span>], <span class="st">'steelblue'</span>, lw=<span class="num">2</span>)
+    axes[<span class="num">0</span>].<span class="fn">set_title</span>(<span class="st">'Original Unit Square'</span>, fontsize=<span class="num">14</span>)
+    
+    <span class="cm"># After + eigenvectors</span>
+    axes[<span class="num">1</span>].<span class="fn">fill</span>(transformed[<span class="num">0</span>], transformed[<span class="num">1</span>], alpha=<span class="num">0.2</span>, color=<span class="st">'coral'</span>)
+    axes[<span class="num">1</span>].<span class="fn">plot</span>(transformed[<span class="num">0</span>], transformed[<span class="num">1</span>], <span class="st">'coral'</span>, lw=<span class="num">2</span>)
+    
+    colors = [<span class="st">'#2ecc71'</span>, <span class="st">'#9b59b6'</span>]
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(vals)):
+        <span class="kw">if</span> np.<span class="fn">isreal</span>(vals[i]):  <span class="cm"># Only plot real eigenvectors</span>
+            v = vecs[:, i].<span class="fn">real</span>
+            lam = vals[i].<span class="fn">real</span>
+            <span class="cm"># Draw eigenvector direction</span>
+            axes[<span class="num">1</span>].<span class="fn">annotate</span>(<span class="st">''</span>, xy=v*lam, xytext=(<span class="num">0</span>,<span class="num">0</span>),
+                arrowprops=<span class="fn">dict</span>(arrowstyle=<span class="st">'->'</span>, color=colors[i], lw=<span class="num">2.5</span>))
+            axes[<span class="num">1</span>].<span class="fn">annotate</span>(<span class="st">''</span>, xy=v*<span class="num">3</span>, xytext=v*-<span class="num">3</span>,
+                arrowprops=<span class="fn">dict</span>(arrowstyle=<span class="st">'-'</span>, color=colors[i], lw=<span class="num">1</span>, ls=<span class="st">'--'</span>))
+            axes[<span class="num">1</span>].<span class="fn">text</span>(v[<span class="num">0</span>]*lam+<span class="num">0.2</span>, v[<span class="num">1</span>]*lam+<span class="num">0.2</span>,
+                <span class="st">f'λ={lam:.1f}'</span>, color=colors[i], fontsize=<span class="num">12</span>, fontweight=<span class="st">'bold'</span>)
+    
+    axes[<span class="num">1</span>].<span class="fn">set_title</span>(<span class="st">f'After A · det={np.linalg.det(A):.1f}'</span>, fontsize=<span class="num">14</span>)
+    plt.<span class="fn">tight_layout</span>()
+    plt.<span class="fn">show</span>()
+
+<span class="cm"># Run it!</span>
+A = np.<span class="fn">array</span>([[<span class="num">3</span>, <span class="num">1</span>], [<span class="num">0</span>, <span class="num">2</span>]])
+<span class="fn">full_visualizer</span>(A)
+
+<span class="cm"># Try more matrices to build intuition:</span>
+<span class="fn">full_visualizer</span>(np.<span class="fn">array</span>([[<span class="num">2</span>, <span class="num">0</span>], [<span class="num">0</span>, <span class="num">0.5</span>]]))  <span class="cm"># Scaling</span>
+<span class="fn">full_visualizer</span>(np.<span class="fn">array</span>([[<span class="num">0</span>, -<span class="num">1</span>], [<span class="num">1</span>, <span class="num">0</span>]]))  <span class="cm"># Rotation (complex eigenvalues!)</span>
+<span class="fn">full_visualizer</span>(np.<span class="fn">array</span>([[<span class="num">1</span>, <span class="num">1</span>], [<span class="num">0</span>, <span class="num">1</span>]]))  <span class="cm"># Shear</span>
+</code></pre>
+
+  <div class="divider"></div>
+
+  <h2>Day 1 Summary — What You Must Know Cold</h2>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <h5>✓ Vectors</h5>
+      <p>Lists of numbers. Operations: add, scale, dot product. Dot product = similarity measure.</p>
+    </div>
+    <div class="concept-card">
+      <h5>✓ Independence & Span</h5>
+      <p>Independent = no redundancy. Span = what you can reach. Basis = minimal spanning set.</p>
+    </div>
+    <div class="concept-card">
+      <h5>✓ Matrices = Transformations</h5>
+      <p>Columns = where basis vectors land. AB = apply B then A. Multiply: row · column.</p>
+    </div>
+    <div class="concept-card">
+      <h5>✓ Determinant</h5>
+      <p>Area scaling factor. det=0 → singular. 2×2: ad−bc.</p>
+    </div>
+    <div class="concept-card">
+      <h5>✓ Inverse</h5>
+      <p>Undoes the transformation. Exists iff det≠0. 2×2: swap diagonal, negate off-diagonal, ÷ det.</p>
+    </div>
+    <div class="concept-card">
+      <h5>✓ Rank</h5>
+      <p># independent columns. Rank + Nullity = # columns. Full rank = invertible.</p>
+    </div>
+    <div class="concept-card">
+      <h5>✓ Gaussian Elimination</h5>
+      <p>Row operations to solve Ax=b. Forward eliminate, then back-substitute.</p>
+    </div>
+    <div class="concept-card">
+      <h5>✓ Eigenvalues</h5>
+      <p>Av=λv. Find λ: det(A−λI)=0. Find v: solve (A−λI)v=0. Foundation of PCA.</p>
+    </div>
+  </div>
+
+  <div class="callout example">
+    <span class="callout-tag">Day 1 Completion Test</span>
+    Can you do ALL of these without looking anything up?<br><br>
+    1. Compute eigenvalues of a 2×2 matrix in under 3 minutes<br>
+    2. Solve a 2×2 system by Gaussian elimination<br>
+    3. Compute a 3×3 determinant by cofactor expansion<br>
+    4. Write the 2×2 inverse formula from memory<br>
+    5. Explain what rank, column space, and null space mean geometrically<br>
+    6. Write <code>np.linalg.eig(A)</code> and interpret the output<br><br>
+    If yes → You're ready for Day 2 (eigendecomposition, PSD matrices, Gram-Schmidt)!
+  </div>
+</div>
+
+</main>
+
+<footer>
+  IOAI 2026 Prep · Day 1 of 8 · Phase 1: Math Foundations · Next: Day 2 — Eigendecomposition, PSD Matrices & Kernel Validity
+</footer>
+
+</body>
+</html>
